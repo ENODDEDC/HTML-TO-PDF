@@ -151,7 +151,7 @@ export default function App() {
 
       const safeName = config.fileName.trim() || 'document';
       pdf.save(`${safeName}.pdf`);
-      showToast('✅ PDF downloaded — ' + numPages + ' page' + (numPages > 1 ? 's' : '') + '!');
+      showToast('✅ PDF downloaded successfully — ' + numPages + ' page' + (numPages > 1 ? 's' : ''));
     } catch (err) {
       console.error('PDF generation error:', err);
       showToast('❌ Error generating PDF. Please try again.');
@@ -224,9 +224,11 @@ export default function App() {
         >
           {isGenerating ? (
             <>
-              <svg className="w-4 h-4 spinner" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" fill="none" strokeDasharray="30 70" /></svg>
-              <span className="hidden sm:inline">Generating…</span>
-              <span className="sm:hidden">...</span>
+              <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Generating...</span>
             </>
           ) : (
             <>
@@ -269,17 +271,6 @@ export default function App() {
       {toast && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-xl bg-surface border border-[#3a414d] shadow-2xl text-white text-sm font-medium">
           {toast}
-        </div>
-      )}
-
-      {/* ── Generating overlay ── */}
-      {isGenerating && (
-        <div className="fixed inset-0 z-[90] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-surface border border-[#3a414d] rounded-2xl p-8 flex flex-col items-center gap-4 shadow-2xl">
-            <div className="w-12 h-12 border-4 border-gray-700 border-t-gray-200 rounded-full spinner" />
-            <div className="text-white font-semibold">Generating your PDF…</div>
-            <div className="text-gray-400 text-sm">Matching preview pages to PDF pages</div>
-          </div>
         </div>
       )}
     </div>
