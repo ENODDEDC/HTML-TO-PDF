@@ -27,6 +27,8 @@ export interface PreviewHandle {
   getContentScaleY: () => number;
   /** The visible content area width per page in px */
   getContentWPx: () => number;
+  /** The raw content height before scaling */
+  getRawContentHeight: () => number;
 }
 
 interface PreviewProps {
@@ -210,8 +212,9 @@ const Preview = forwardRef<PreviewHandle, PreviewProps>(({ html, config }, ref) 
       getContentScale: () => cs,
       getContentScaleX: () => contentScaleX,
       getContentScaleY: () => contentScaleY,
+      getRawContentHeight: () => rawContentH,
     }),
-    [layoutWPx, contentWPx, contentHPx, scaledContentH, numPages, cs, contentScaleX, contentScaleY],
+    [layoutWPx, contentWPx, contentHPx, scaledContentH, numPages, cs, contentScaleX, contentScaleY, rawContentH],
   );
 
   return (

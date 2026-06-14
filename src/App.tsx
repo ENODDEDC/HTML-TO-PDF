@@ -61,6 +61,7 @@ export default function App() {
       const numPages = p.getNumPages();
       const scaleX = p.getContentScaleX();
       const scaleY = p.getContentScaleY();
+      const rawContentH = p.getRawContentHeight();
 
       const size = PAGE_SIZES[config.pageSize];
       const pdfW = config.orientation === 'landscape' ? size.height : size.width;
@@ -68,42 +69,18 @@ export default function App() {
       const contentWMm = pdfW - config.margins.left - config.margins.right;
       const contentHMm = pdfH - config.margins.top - config.margins.bottom;
 
-      const container = document.createElement('div');
-      container.style.cssText = `position:absolute;left:-99999px;top:0;width:${layoutWPx}px;background:white;`;
-
+      // Extract styles from measure document
+      const styles: string[] = [];
       measureDoc.querySelectorAll('style').forEach((s) => {
-        container.appendChild(s.cloneNode(true));
+        styles.push(s.textContent || '');
       });
+      const stylesText = styles.join('\n');
 
-      const bodyClone = measureDoc.body.cloneNode(true) as HTMLElement;
-      bodyClone.style.margin = '0';
-      bodyClone.style.padding = '0';
-      container.appendChild(bodyClone);
-      document.body.appendChild(container);
+      // Get body HTML
+      const bodyHtml = measureDoc.body.innerHTML;
 
-      await new Promise((r) => setTimeout(r, 500));
-
-      const fullCanvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-      });
-
-      document.body.removeChild(container);
-
-      const scaledCanvas = document.createElement('canvas');
-      const scaledW = Math.round(fullCanvas.width * scaleX);
-      const scaledH = Math.round(fullCanvas.height * scaleY);
-      scaledCanvas.width = scaledW;
-      scaledCanvas.height = scaledH;
-      const sctx = scaledCanvas.getContext('2d');
-      if (sctx) {
-        sctx.fillStyle = '#ffffff';
-        sctx.fillRect(0, 0, scaledW, scaledH);
-        sctx.drawImage(fullCanvas, 0, 0, scaledW, scaledH);
-      }
+      // Unscaled content height that fits in one page
+      const unscaledPageH = contentHPx / scaleY;
 
       const pdf = new jsPDF({
         orientation: config.orientation,
@@ -111,30 +88,65 @@ export default function App() {
         format: ['letter', 'legal'].includes(config.pageSize) ? config.pageSize : [pdfW, pdfH],
       });
 
-      const canvasScaleY = scaledCanvas.height / p.getScaledContentHeight();
-      const pageCanvasH = contentHPx * canvasScaleY;
-
+      // Render each page individually, exactly like the preview does
       for (let i = 0; i < numPages; i++) {
         if (i > 0) pdf.addPage();
 
-        const srcY = i * pageCanvasH;
-        const remaining = scaledCanvas.height - srcY;
-        const sliceH = Math.min(pageCanvasH, Math.max(1, remaining));
+        // Calculate the offset for this page (same as preview)
+        const offsetUnscaled = i * unscaledPageH;
 
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = scaledCanvas.width;
-        pageCanvas.height = Math.round(sliceH);
-        const ctx = pageCanvas.getContext('2d');
-        if (!ctx) continue;
+        // Create a container that mimics the preview's page rendering
+        const container = document.createElement('div');
+        container.style.cssText = `position:absolute;left:-99999px;top:0;width:${contentWPx}px;height:${contentHPx}px;overflow:hidden;background:white;`;
 
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-        ctx.drawImage(scaledCanvas, 0, srcY, scaledCanvas.width, sliceH, 0, 0, pageCanvas.width, sliceH);
+        // Add styles
+        const styleEl = document.createElement('style');
+        styleEl.textContent = `
+          *,*::before,*::after{box-sizing:border-box}
+          html,body{margin:0!important;padding:0!important;background:white!important}
+          #__pdf_scale_wrap{
+            transform-origin:top left;
+            transform:scale(${scaleX}, ${scaleY});
+            width:${layoutWPx}px;
+          }
+          #__pdf_offset_wrap{
+            position:relative;
+            top:${-offsetUnscaled}px;
+          }
+          ${stylesText}
+        `;
+        container.appendChild(styleEl);
 
-        const imgData = pageCanvas.toDataURL('image/png');
-        const imgHMm = (sliceH / pageCanvasH) * contentHMm;
+        // Add content with same structure as preview
+        const scaleWrap = document.createElement('div');
+        scaleWrap.id = '__pdf_scale_wrap';
+        const offsetWrap = document.createElement('div');
+        offsetWrap.id = '__pdf_offset_wrap';
+        offsetWrap.innerHTML = bodyHtml;
+        scaleWrap.appendChild(offsetWrap);
+        container.appendChild(scaleWrap);
 
-        pdf.addImage(imgData, 'PNG', config.margins.left, config.margins.top, contentWMm, imgHMm);
+        document.body.appendChild(container);
+
+        // Wait for content to render
+        await new Promise((r) => setTimeout(r, 200));
+
+        // Capture this page
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: contentWPx,
+          height: contentHPx,
+        });
+
+        document.body.removeChild(container);
+
+        // Add to PDF
+        const imgData = canvas.toDataURL('image/png');
+        pdf.addImage(imgData, 'PNG', config.margins.left, config.margins.top, contentWMm, contentHMm);
       }
 
       const safeName = config.fileName.trim() || 'document';
