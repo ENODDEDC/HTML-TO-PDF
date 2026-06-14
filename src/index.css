@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #6b7280;
+  --color-primary-dark: #4b5563;
+  --color-primary-light: #d1d5db;
+  --color-surface: #151922;
+  --color-surface-light: #1b202b;
+  --color-surface-lighter: #242a35;
+  --color-accent: #9ca3af;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a414d #0b0d12;
+}
+
+body {
+  background: #0b0d12;
+  color: #e2e8f0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  overflow: hidden;
+}
+
+/* Code editor */
+.code-editor {
+  font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  tab-size: 2;
+  resize: none;
+}
+.code-editor:focus {
+  outline: none;
+}
+
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Range slider (content scale) */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: #2a303b;
+  border-radius: 3px;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #d1d5db;
+  cursor: pointer;
+  border: 2px solid #f3f4f6;
+  box-shadow: none;
+  transition: transform 0.15s;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #d1d5db;
+  cursor: pointer;
+  border: 2px solid #f3f4f6;
+  box-shadow: none;
+}
+
