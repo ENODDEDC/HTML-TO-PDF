@@ -16,4 +16,5 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  base: process.env.NODE_ENV === 'production' ? '/html-to-pdf-with-preview/' : '/',
 });

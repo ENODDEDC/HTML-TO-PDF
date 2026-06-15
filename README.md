@@ -78,6 +78,42 @@ npm run preview
 
 The built files will be in the `dist/` directory.
 
+## 🔄 CI/CD Pipeline
+
+This project uses GitHub Actions for automated testing and deployment:
+
+### Workflows
+
+1. **CI - Build and Test** (`ci.yml`)
+   - Runs on every push and pull request
+   - Tests build on Node.js 18.x and 20.x
+   - Performs TypeScript type checking
+   - Uploads build artifacts
+   - Status check before merging
+
+2. **Deploy to GitHub Pages** (`deploy.yml`)
+   - Automatically deploys to GitHub Pages on push to `main`
+   - Can be manually triggered via workflow dispatch
+   - Production-ready build with optimizations
+
+3. **Preview Deployment** (`preview.yml`)
+   - Builds preview for pull requests
+   - Uploads artifacts for testing
+   - Comments build status on PR
+
+### Setting Up GitHub Pages
+
+1. Go to your repository **Settings** → **Pages**
+2. Under **Source**, select **GitHub Actions**
+3. Push to `main` branch to trigger deployment
+4. Your app will be available at: `https://yourusername.github.io/html-to-pdf-with-preview/`
+
+### Branch Protection Rules (Recommended)
+
+- Require status checks to pass before merging
+- Require pull request reviews
+- Enable "Require branches to be up to date before merging"
+
 ## 📖 Usage
 
 ### 1. **Paste or Write HTML**
