@@ -9,12 +9,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss(), viteSingleFile()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
   },
-  base: process.env.NODE_ENV === 'production' ? '/html-to-pdf-with-preview/' : '/',
-});
+  // Use root path for both dev and production for now
+  base: './',
+}));
